@@ -20,7 +20,7 @@ interface Location {
   };
 }
 
-export const findGoogleBusinessAccounts = async (apiKey: string, accessToken: string) => {
+export const findGoogleBusinessAccounts = async (accessToken: string) => {
   try {
     const response = await fetch(
       'https://mybusiness.googleapis.com/v4/accounts',
@@ -112,7 +112,7 @@ export const displayBusinessInfo = (accounts: Account[], locations: Location[]) 
 export const discoverBusinessLocation = async (accessToken: string) => {
   try {
     console.log('🔍 Searching for your Google Business accounts...');
-    const accounts = await findGoogleBusinessAccounts('', accessToken);
+    const accounts = await findGoogleBusinessAccounts(accessToken);
     
     if (accounts.length === 0) {
       throw new Error('No Google Business accounts found');

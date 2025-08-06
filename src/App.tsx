@@ -1,14 +1,9 @@
 import React from 'react';
-import { Phone, MessageSquare, MapPin, Star, Wrench, Settings, Car, Battery, Gauge, Zap, Award, Users } from 'lucide-react';
+import { Phone, MessageSquare, MapPin, Wrench, Settings, Car, Battery, Gauge, Zap, Award, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Logo from './components/Logo';
-import GoogleReviews from './components/GoogleReviews';
-import LocationIdFinder from './components/LocationIdFinder';
 
 const App = () => {
-  // Check if Google API is configured
-  const isGoogleAPIConfigured = import.meta.env.VITE_GOOGLE_LOCATION_ID && 
-                               import.meta.env.VITE_GOOGLE_API_KEY;
 
   const services = [
     { icon: <Car className="w-8 h-8" />, name: "Car Maintenance", desc: "Regular servicing & upkeep" },
@@ -211,7 +206,7 @@ const App = () => {
         </div>
       </section>
 
-            {/* Reviews Section */}
+      {/* Reviews Section */}
       <section className="relative py-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <motion.h2 
@@ -219,52 +214,23 @@ const App = () => {
             whileInView={{ opacity: 1 }}
             className="text-5xl font-display font-bold mb-12 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"
           >
-            GOOGLE REVIEWS
+            {isGoogleAPIConfigured ? 'GOOGLE REVIEWS' : 'SETUP GOOGLE REVIEWS'}
           </motion.h2>
           
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 p-8 shadow-2xl"
           >
-            <div className="flex items-center justify-center mb-6">
-              <div className="flex text-yellow-400 text-2xl">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-8 h-8 fill-current" />
-                ))}
-              </div>
-              <span className="ml-4 text-3xl font-bold font-display bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">5.0/5</span>
-            </div>
-            <p className="text-white/70 mb-8 text-lg font-light">Based on Live Google Reviews</p>
-            
-            {/* Google Reviews Widget Placeholder */}
-            <div className="bg-white/5 rounded-2xl p-8 border border-white/10">
-              <div className="text-white/70 text-center">
-                <div className="mb-4">
-                  <div className="inline-block p-4 bg-blue-500/20 rounded-full mb-4">
-                    <Star className="w-12 h-12 text-yellow-400" />
-                  </div>
-                </div>
-                <p className="text-lg font-light mb-4">Live Google Reviews Widget</p>
-                <p className="text-sm text-white/50 max-w-md mx-auto">
-                  To display live Google reviews, you'll need to integrate with Google's My Business API or use a third-party service like EmbedSocial, Trustmary, or Reviews.co.uk
-                </p>
-                <div className="mt-6">
-                  <a 
-                    href="https://www.google.com/search?q=AutoworkX+Coburg+North+reviews" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500/30 to-purple-500/30 hover:from-blue-500/50 hover:to-purple-500/50 backdrop-blur-md px-6 py-3 rounded-xl border border-blue-500/30 hover:border-blue-400/50 text-white font-medium transition-all duration-300 hover:scale-105"
-                  >
-                    View Google Reviews
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </div>
+            {isGoogleAPIConfigured ? (
+              <GoogleReviews 
+                locationId={import.meta.env.VITE_GOOGLE_LOCATION_ID}
+                apiKey={import.meta.env.VITE_GOOGLE_API_KEY}
+                maxReviews={parseInt(import.meta.env.VITE_MAX_REVIEWS || '6') || 6}
+              />
+            ) : (
+              <LocationIdFinder />
+            )}
           </motion.div>
         </div>
       </section>
