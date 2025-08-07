@@ -23,7 +23,7 @@ export const submitFormData = async (data: FormData): Promise<boolean> => {
 
   // Method 1: Try direct fetch (works in development)
   try {
-    const response = await fetch(targetUrl, {
+    await fetch(targetUrl, {
       method: 'GET',
       mode: 'no-cors' // This allows the request but we can't read the response
     });
