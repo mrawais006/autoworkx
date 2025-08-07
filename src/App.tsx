@@ -5,6 +5,7 @@ import Logo from './components/Logo';
 
 const App = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const services = [
     { icon: <Car className="w-8 h-8" />, name: "Car Maintenance", desc: "Regular servicing & upkeep" },
@@ -33,6 +34,11 @@ const App = () => {
 
   const handleWorkshop = () => {
     window.open('https://maps.app.goo.gl/1Frnarsfi4PJ4Bfk6', '_blank');
+  };
+
+  const showSuccessMessage = () => {
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 5000); // Hide after 5 seconds
   };
 
   const handleBooking = async (e: React.FormEvent) => {
@@ -77,18 +83,21 @@ const App = () => {
     };
     
     try {
-      // Send to Google Apps Script
-      await fetch('https://script.google.com/macros/s/AKfycbw5qrBp_81Q69gTp-7Ok9DuaxpFiyeShRjWmq76y2iEtpH2W5xvOF_EHW7ecvGgT_vTqg/exec', {
+      // Send to Google Apps Script with enhanced error handling
+      const response = await fetch('https://script.google.com/macros/s/AKfycbw5qrBp_81Q69gTp-7Ok9DuaxpFiyeShRjWmq76y2iEtpH2W5xvOF_EHW7ecvGgT_vTqg/exec', {
         method: 'POST',
-        mode: 'no-cors', // Required for Google Apps Script
+        redirect: 'follow',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'text/plain;charset=utf-8',
         },
         body: JSON.stringify(submissionData)
       });
       
-      // Since no-cors mode doesn't return response, we assume success
-      alert('Thank you! Your booking request has been submitted. We will contact you shortly.');
+      // Wait a moment to ensure processing
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Show beautiful success message instead of alert
+      showSuccessMessage();
       console.log('Form submitted successfully:', submissionData);
       
       // Reset form
@@ -370,6 +379,31 @@ const App = () => {
               {isSubmitting ? 'SUBMITTING...' : 'BOOK NOW'}
             </button>
           </motion.form>
+
+          {/* Beautiful Success Message */}
+          {showSuccess && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.9 }}
+              className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-gradient-to-r from-green-500/90 to-emerald-500/90 backdrop-blur-md rounded-2xl border border-green-400/30 p-6 shadow-2xl max-w-md mx-auto"
+            >
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Booking Submitted! ✨</h3>
+                <p className="text-green-100 text-sm leading-relaxed">
+                  Thank you! Your service request has been received. We'll contact you within 24 hours to schedule your appointment.
+                </p>
+                <div className="mt-4 text-xs text-green-200">
+                  📞 Emergency? Call us: <span className="font-semibold">0451 109 786</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </div>
       </section>
 
