@@ -78,7 +78,7 @@ const App = () => {
     
     try {
       // Send to Google Apps Script
-      await fetch('https://script.google.com/macros/s/AKfycbwYxczAtlq2jXCoTb6RGhg9Fj2mrgLhrybPXzaygfHB1msJV19KqMZViPUzE4ZBmxXzRA/exec', {
+      await fetch('https://script.google.com/macros/s/AKfycbw5qrBp_81Q69gTp-7Ok9DuaxpFiyeShRjWmq76y2iEtpH2W5xvOF_EHW7ecvGgT_vTqg/exec', {
         method: 'POST',
         mode: 'no-cors', // Required for Google Apps Script
         headers: {
