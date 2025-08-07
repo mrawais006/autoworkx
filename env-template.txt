@@ -1,0 +1,17 @@
+# Google My Business API Configuration
+# Rename this file to .env and fill in your actual values
+
+# API Key from Google Cloud Console
+VITE_GOOGLE_API_KEY=your_api_key_here
+
+# OAuth 2.0 Client ID
+VITE_GOOGLE_CLIENT_ID=your_client_id_here
+
+# OAuth 2.0 Client Secret (keep this secure)
+VITE_GOOGLE_CLIENT_SECRET=your_client_secret_here
+
+# Your business location ID (format: locations/12345678901234567890)
+VITE_GOOGLE_LOCATION_ID=your_location_id_here
+
+# Optional: Number of reviews to display (default: 6)
+VITE_MAX_REVIEWS=6
