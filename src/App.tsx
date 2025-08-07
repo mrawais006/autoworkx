@@ -83,18 +83,17 @@ const App = () => {
     };
     
     try {
-      // Send to Google Apps Script with enhanced error handling
-      const response = await fetch('https://script.google.com/macros/s/AKfycbw5qrBp_81Q69gTp-7Ok9DuaxpFiyeShRjWmq76y2iEtpH2W5xvOF_EHW7ecvGgT_vTqg/exec', {
+      // Send to Google Apps Script - PRODUCTION FIXED VERSION
+      await fetch('https://script.google.com/macros/s/AKfycbw5qrBp_81Q69gTp-7Ok9DuaxpFiyeShRjWmq76y2iEtpH2W5xvOF_EHW7ecvGgT_vTqg/exec', {
         method: 'POST',
-        redirect: 'follow',
+        mode: 'no-cors', // Required for Google Apps Script cross-origin
         headers: {
-          'Content-Type': 'text/plain;charset=utf-8',
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(submissionData)
       });
       
-      // Wait a moment to ensure processing
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('Request sent to Google Apps Script successfully');
       
       // Show beautiful success message instead of alert
       showSuccessMessage();
