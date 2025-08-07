@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Phone, MessageSquare, MapPin, Wrench, Settings, Car, Battery, Gauge, Zap, Award, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Logo from './components/Logo';
+import { submitFormData } from './utils/formSubmission';
 
 const App = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,35 +84,27 @@ const App = () => {
     };
     
     try {
-      // SIMPLEST POSSIBLE APPROACH - Direct URL navigation
-      const params = new URLSearchParams();
-      params.append('name', (data.name as string) || '');
-      params.append('phone', (data.phone as string) || '');
-      params.append('email', (data.email as string) || '');
-      params.append('service', (data.service as string) || '');
-      params.append('message', (data.message as string) || '');
-      params.append('timestamp', submissionData.timestamp);
-      params.append('source', submissionData.source);
+      // Use the new form submission utility
+      const success = await submitFormData({
+        name: data.name as string,
+        phone: data.phone as string,
+        email: data.email as string,
+        service: data.service as string,
+        message: data.message as string,
+        timestamp: submissionData.timestamp,
+        source: submissionData.source
+      });
       
-      // Create a hidden iframe to make the request - this ALWAYS works
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = `https://script.google.com/macros/s/AKfycbw5qrBp_81Q69gTp-7Ok9DuaxpFiyeShRjWmq76y2iEtpH2W5xvOF_EHW7ecvGgT_vTqg/exec?${params.toString()}`;
-      document.body.appendChild(iframe);
-      
-      // Remove iframe after 2 seconds
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-      }, 2000);
-      
-      console.log('Request sent via iframe to Google Apps Script');
-      
-      // Show beautiful success message instead of alert
-      showSuccessMessage();
-      console.log('Form submitted successfully:', submissionData);
-      
-      // Reset form
-      formElement.reset();
+      if (success) {
+        // Show beautiful success message
+        showSuccessMessage();
+        console.log('Form submitted successfully:', submissionData);
+        
+        // Reset form
+        formElement.reset();
+      } else {
+        throw new Error('All submission methods failed');
+      }
     } catch (error) {
       console.error('Error submitting form:', error);
       alert('There was an error submitting your request. Please try again or call us directly at 0451 109 786.');
@@ -293,24 +286,24 @@ const App = () => {
                   </svg>
                 ))}
               </div>
-              <span className="ml-3 text-2xl font-bold text-gray-800">4.8/5</span>
+              <span className="ml-3 text-2xl font-bold text-gray-800">5/5</span>
             </div>
             <p className="text-gray-600 mb-6 text-lg">Based on Google Reviews</p>
             
             <div className="space-y-6">
               <div className="border-b pb-4">
                 <p className="text-lg italic mb-2">"Excellent service and honest pricing. Fixed my brake issues quickly!"</p>
-                <p className="text-sm text-gray-500">- Sarah M.</p>
+                <p className="text-sm text-gray-500">- Danny</p>
               </div>
               
               <div className="border-b pb-4">
                 <p className="text-lg italic mb-2">"Professional team, quick turnaround. Highly recommend!"</p>
-                <p className="text-sm text-gray-500">- Mike T.</p>
+                <p className="text-sm text-gray-500">- M Awais</p>
               </div>
               
               <div>
                 <p className="text-lg italic mb-2">"Best auto repair in Coburg North. Always reliable service."</p>
-                <p className="text-sm text-gray-500">- Emma K.</p>
+                <p className="text-sm text-gray-500">- Chris</p>
               </div>
             </div>
           </div>
