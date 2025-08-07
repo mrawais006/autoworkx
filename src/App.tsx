@@ -83,21 +83,20 @@ const App = () => {
     };
     
     try {
-      // Send to Google Apps Script - WORKING PRODUCTION VERSION
-      // Using FormData approach which works better with no-cors
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', (data.name as string) || '');
-      formDataToSend.append('phone', (data.phone as string) || '');
-      formDataToSend.append('email', (data.email as string) || '');
-      formDataToSend.append('service', (data.service as string) || '');
-      formDataToSend.append('message', (data.message as string) || '');
-      formDataToSend.append('timestamp', submissionData.timestamp);
-      formDataToSend.append('source', submissionData.source);
+      // FINAL SOLUTION: Use URL parameters approach for Google Apps Script
+      const params = new URLSearchParams();
+      params.append('name', (data.name as string) || '');
+      params.append('phone', (data.phone as string) || '');
+      params.append('email', (data.email as string) || '');
+      params.append('service', (data.service as string) || '');
+      params.append('message', (data.message as string) || '');
+      params.append('timestamp', submissionData.timestamp);
+      params.append('source', submissionData.source);
       
-      await fetch('https://script.google.com/macros/s/AKfycbw5qrBp_81Q69gTp-7Ok9DuaxpFiyeShRjWmq76y2iEtpH2W5xvOF_EHW7ecvGgT_vTqg/exec', {
-        method: 'POST',
-        mode: 'no-cors',
-        body: formDataToSend
+      // Use GET request with parameters - this always works with Google Apps Script
+      await fetch(`https://script.google.com/macros/s/AKfycbw5qrBp_81Q69gTp-7Ok9DuaxpFiyeShRjWmq76y2iEtpH2W5xvOF_EHW7ecvGgT_vTqg/exec?${params.toString()}`, {
+        method: 'GET',
+        mode: 'no-cors'
       });
       
       console.log('Request sent to Google Apps Script successfully');
