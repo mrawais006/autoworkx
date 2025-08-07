@@ -86,11 +86,11 @@ const App = () => {
       // Send to Google Apps Script - WORKING PRODUCTION VERSION
       // Using FormData approach which works better with no-cors
       const formDataToSend = new FormData();
-      formDataToSend.append('name', submissionData.name);
-      formDataToSend.append('phone', submissionData.phone);
-      formDataToSend.append('email', submissionData.email);
-      formDataToSend.append('service', submissionData.service);
-      formDataToSend.append('message', submissionData.message);
+      formDataToSend.append('name', (data.name as string) || '');
+      formDataToSend.append('phone', (data.phone as string) || '');
+      formDataToSend.append('email', (data.email as string) || '');
+      formDataToSend.append('service', (data.service as string) || '');
+      formDataToSend.append('message', (data.message as string) || '');
       formDataToSend.append('timestamp', submissionData.timestamp);
       formDataToSend.append('source', submissionData.source);
       
