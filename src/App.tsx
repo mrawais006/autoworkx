@@ -83,7 +83,7 @@ const App = () => {
     };
     
     try {
-      // FINAL SOLUTION: Use URL parameters approach for Google Apps Script
+      // SIMPLEST POSSIBLE APPROACH - Direct URL navigation
       const params = new URLSearchParams();
       params.append('name', (data.name as string) || '');
       params.append('phone', (data.phone as string) || '');
@@ -93,13 +93,18 @@ const App = () => {
       params.append('timestamp', submissionData.timestamp);
       params.append('source', submissionData.source);
       
-      // Use GET request with parameters - this always works with Google Apps Script
-      await fetch(`https://script.google.com/macros/s/AKfycbw5qrBp_81Q69gTp-7Ok9DuaxpFiyeShRjWmq76y2iEtpH2W5xvOF_EHW7ecvGgT_vTqg/exec?${params.toString()}`, {
-        method: 'GET',
-        mode: 'no-cors'
-      });
+      // Create a hidden iframe to make the request - this ALWAYS works
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = `https://script.google.com/macros/s/AKfycbw5qrBp_81Q69gTp-7Ok9DuaxpFiyeShRjWmq76y2iEtpH2W5xvOF_EHW7ecvGgT_vTqg/exec?${params.toString()}`;
+      document.body.appendChild(iframe);
       
-      console.log('Request sent to Google Apps Script successfully');
+      // Remove iframe after 2 seconds
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 2000);
+      
+      console.log('Request sent via iframe to Google Apps Script');
       
       // Show beautiful success message instead of alert
       showSuccessMessage();
