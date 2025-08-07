@@ -1,4 +1,4 @@
-// Form submission utility with multiple fallback methods
+// Form submission utility with production-ready methods
 export interface FormData {
   name: string;
   phone: string;
@@ -19,66 +19,105 @@ export const submitFormData = async (data: FormData): Promise<boolean> => {
   params.append('timestamp', data.timestamp);
   params.append('source', data.source);
 
-  const targetUrl = `https://script.google.com/macros/s/AKfycbw5qrBp_81Q69gTp-7Ok9DuaxpFiyeShRjWmq76y2iEtpH2W5xvOF_EHW7ecvGgT_vTqg/exec?${params.toString()}`;
+  const targetUrl = `https://script.google.com/macros/s/AKfycbw5qrBp_81Q69gTp-7Ok9DuaxpFiyeShRjWmq76y2iEtpH2W5xvOF_EHW7ecvGgT_vTqg/exec`;
 
-  // Method 1: Try direct fetch (works in development)
-  try {
-    await fetch(targetUrl, {
-      method: 'GET',
-      mode: 'no-cors' // This allows the request but we can't read the response
-    });
-    console.log('Direct fetch attempted');
-    return true;
-  } catch (error) {
-    console.log('Direct fetch failed, trying CORS proxy...');
-  }
-
-  // Method 2: CORS Proxy
-  try {
-    const corsProxy = 'https://cors-anywhere.herokuapp.com/';
-    const response = await fetch(corsProxy + targetUrl, {
-      method: 'GET',
-      headers: {
-        'Origin': 'https://autoworks.com.au'
-      }
-    });
-    
-    if (response.ok) {
-      console.log('Form submitted successfully via CORS proxy');
-      return true;
-    }
-  } catch (error) {
-    console.log('CORS proxy failed, trying iframe method...');
-  }
-
-  // Method 3: Iframe method
+  // Method 1: Hidden iframe method (most reliable for production)
   try {
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
-    iframe.src = targetUrl;
+    iframe.style.position = 'absolute';
+    iframe.style.left = '-9999px';
+    iframe.style.width = '1px';
+    iframe.style.height = '1px';
+    
+    // Create the URL with parameters
+    iframe.src = `${targetUrl}?${params.toString()}`;
+    
     document.body.appendChild(iframe);
     
+    // Clean up after 3 seconds
     setTimeout(() => {
-      document.body.removeChild(iframe);
-    }, 2000);
+      if (document.body.contains(iframe)) {
+        document.body.removeChild(iframe);
+      }
+    }, 3000);
     
-    console.log('Request sent via iframe to Google Apps Script');
+    console.log('Form data sent via hidden iframe');
     return true;
   } catch (error) {
-    console.log('Iframe method failed, trying form action...');
+    console.log('Iframe method failed, trying image pixel method...');
   }
 
-  // Method 4: Form action (most reliable for production)
+  // Method 2: Image pixel method (works in most environments)
+  try {
+    const img = new Image();
+    img.style.display = 'none';
+    
+    // Use the image onload/onerror to clean up
+    img.onload = img.onerror = () => {
+      // Clean up
+      img.src = '';
+    };
+    
+    img.src = `${targetUrl}?${params.toString()}&_=${Date.now()}`;
+    
+    console.log('Form data sent via image pixel');
+    return true;
+  } catch (error) {
+    console.log('Image pixel method failed, trying fetch with no-cors...');
+  }
+
+  // Method 3: Fetch with no-cors (backup method)
+  try {
+    await fetch(`${targetUrl}?${params.toString()}`, {
+      method: 'GET',
+      mode: 'no-cors',
+      cache: 'no-cache'
+    });
+    console.log('Form data sent via fetch no-cors');
+    return true;
+  } catch (error) {
+    console.log('Fetch method failed, trying hidden form submission...');
+  }
+
+  // Method 4: Hidden form submission (last resort - no new tab)
   try {
     const form = document.createElement('form');
     form.method = 'GET';
     form.action = targetUrl;
-    form.target = '_blank';
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
+    form.target = 'hidden_iframe_' + Date.now();
+    form.style.display = 'none';
     
-    console.log('Form submitted via form action');
+    // Create hidden iframe for form target (prevents new tab)
+    const iframe = document.createElement('iframe');
+    iframe.name = form.target;
+    iframe.style.display = 'none';
+    iframe.style.position = 'absolute';
+    iframe.style.left = '-9999px';
+    iframe.style.width = '1px';
+    iframe.style.height = '1px';
+    
+    // Add form fields
+    params.forEach((value, key) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    });
+    
+    document.body.appendChild(iframe);
+    document.body.appendChild(form);
+    
+    form.submit();
+    
+    // Clean up after 3 seconds
+    setTimeout(() => {
+      if (document.body.contains(form)) document.body.removeChild(form);
+      if (document.body.contains(iframe)) document.body.removeChild(iframe);
+    }, 3000);
+    
+    console.log('Form data sent via hidden form submission');
     return true;
   } catch (error) {
     console.error('All submission methods failed:', error);
