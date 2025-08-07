@@ -83,14 +83,21 @@ const App = () => {
     };
     
     try {
-      // Send to Google Apps Script - PRODUCTION FIXED VERSION
+      // Send to Google Apps Script - WORKING PRODUCTION VERSION
+      // Using FormData approach which works better with no-cors
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', submissionData.name);
+      formDataToSend.append('phone', submissionData.phone);
+      formDataToSend.append('email', submissionData.email);
+      formDataToSend.append('service', submissionData.service);
+      formDataToSend.append('message', submissionData.message);
+      formDataToSend.append('timestamp', submissionData.timestamp);
+      formDataToSend.append('source', submissionData.source);
+      
       await fetch('https://script.google.com/macros/s/AKfycbw5qrBp_81Q69gTp-7Ok9DuaxpFiyeShRjWmq76y2iEtpH2W5xvOF_EHW7ecvGgT_vTqg/exec', {
         method: 'POST',
-        mode: 'no-cors', // Required for Google Apps Script cross-origin
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(submissionData)
+        mode: 'no-cors',
+        body: formDataToSend
       });
       
       console.log('Request sent to Google Apps Script successfully');
