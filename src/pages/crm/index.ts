@@ -1,0 +1,11 @@
+export { LoginPage } from './Login'
+export { DashboardPage } from './Dashboard'
+export { CarsPage } from './Cars'
+export { CarFormPage } from './CarForm'
+export { CarDetailPage } from './CarDetail'
+export { ServiceFormPage } from './ServiceForm'
+export { CompaniesPage } from './Companies'
+export { CustomersPage } from './Customers'
+export { PaymentsPage } from './Payments'
+export { SettingsPage } from './Settings'
+
