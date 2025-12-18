@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import type { Company, Customer, Car, Settings } from '../../lib/database.types'
@@ -11,7 +11,10 @@ import {
   Building2,
   User,
   Car as CarIcon,
-  Calculator
+  Calculator,
+  Search,
+  ChevronDown,
+  X
 } from 'lucide-react'
 import { format, addWeeks } from 'date-fns'
 import toast from 'react-hot-toast'
@@ -41,6 +44,169 @@ const QUICK_ITEMS = [
   { name: 'Wheel Balance', price: 40 },
   { name: 'Labour (per hour)', price: 95 },
 ]
+
+// Searchable Select Component
+interface SearchableSelectProps<T> {
+  label: string
+  placeholder: string
+  value: string
+  options: T[]
+  getOptionValue: (option: T) => string
+  getOptionLabel: (option: T) => string
+  getOptionSubLabel?: (option: T) => string | undefined
+  onChange: (value: string) => void
+  required?: boolean
+  icon?: React.ReactNode
+}
+
+function SearchableSelect<T>({
+  label,
+  placeholder,
+  value,
+  options,
+  getOptionValue,
+  getOptionLabel,
+  getOptionSubLabel,
+  onChange,
+  required,
+  icon
+}: SearchableSelectProps<T>) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const containerRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const selectedOption = options.find(o => getOptionValue(o) === value)
+  
+  const filteredOptions = options.filter(option => {
+    const searchLower = search.toLowerCase()
+    const label = getOptionLabel(option).toLowerCase()
+    const subLabel = getOptionSubLabel?.(option)?.toLowerCase() || ''
+    return label.includes(searchLower) || subLabel.includes(searchLower)
+  })
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+        setSearch('')
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleSelect = (optionValue: string) => {
+    onChange(optionValue)
+    setIsOpen(false)
+    setSearch('')
+  }
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onChange('')
+    setSearch('')
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <label className="block text-sm text-slate-400 mb-2">
+        {label} {required && '*'}
+      </label>
+      
+      <div
+        onClick={() => {
+          setIsOpen(true)
+          setTimeout(() => inputRef.current?.focus(), 0)
+        }}
+        className={`
+          w-full px-4 py-2 bg-slate-700 border rounded-lg text-white cursor-pointer
+          flex items-center justify-between gap-2
+          ${isOpen ? 'border-blue-500 ring-2 ring-blue-500' : 'border-slate-600'}
+        `}
+      >
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {icon}
+          {selectedOption ? (
+            <span className="truncate">{getOptionLabel(selectedOption)}</span>
+          ) : (
+            <span className="text-slate-400">{placeholder}</span>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          {value && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="p-1 hover:bg-slate-600 rounded"
+            >
+              <X className="w-4 h-4 text-slate-400" />
+            </button>
+          )}
+          <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-slate-700 border border-slate-600 rounded-lg shadow-xl overflow-hidden">
+          {/* Search Input */}
+          <div className="p-2 border-b border-slate-600">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                ref={inputRef}
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Type to search..."
+                className="w-full pl-9 pr-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          {/* Options List */}
+          <div className="max-h-60 overflow-y-auto">
+            {!required && (
+              <div
+                onClick={() => handleSelect('')}
+                className="px-4 py-2 hover:bg-slate-600 cursor-pointer text-slate-400"
+              >
+                -- None --
+              </div>
+            )}
+            {filteredOptions.length === 0 ? (
+              <div className="px-4 py-3 text-slate-400 text-sm text-center">
+                No results found
+              </div>
+            ) : (
+              filteredOptions.map((option) => {
+                const optionValue = getOptionValue(option)
+                const isSelected = optionValue === value
+                return (
+                  <div
+                    key={optionValue}
+                    onClick={() => handleSelect(optionValue)}
+                    className={`
+                      px-4 py-2 cursor-pointer
+                      ${isSelected ? 'bg-blue-600 text-white' : 'hover:bg-slate-600 text-white'}
+                    `}
+                  >
+                    <div className="font-medium">{getOptionLabel(option)}</div>
+                    {getOptionSubLabel && (
+                      <div className={`text-sm ${isSelected ? 'text-blue-200' : 'text-slate-400'}`}>
+                        {getOptionSubLabel(option)}
+                      </div>
+                    )}
+                  </div>
+                )
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export function InvoiceFormPage() {
   const { id } = useParams()
@@ -80,13 +246,6 @@ export function InvoiceFormPage() {
     fetchData()
   }, [])
 
-  useEffect(() => {
-    // Filter cars when company or customer changes
-    if (formData.company_id || formData.customer_id) {
-      fetchFilteredCars()
-    }
-  }, [formData.company_id, formData.customer_id])
-
   const fetchData = async () => {
     const [companiesRes, customersRes, carsRes, settingsRes] = await Promise.all([
       supabase.from('companies').select('*').order('name'),
@@ -112,20 +271,6 @@ export function InvoiceFormPage() {
     }
 
     setLoading(false)
-  }
-
-  const fetchFilteredCars = async () => {
-    let query = supabase.from('cars').select('*, companies(*), customers(*)')
-    
-    if (formData.company_id) {
-      query = query.eq('company_id', formData.company_id)
-    }
-    if (formData.customer_id) {
-      query = query.eq('customer_id', formData.customer_id)
-    }
-
-    const { data } = await query.order('rego_plate')
-    if (data) setCars(data)
   }
 
   const fetchExistingInvoice = async () => {
@@ -175,6 +320,18 @@ export function InvoiceFormPage() {
         tax_flag: item.tax_flag ?? true
       })))
     }
+  }
+
+  // When a car is selected, auto-populate company and customer from the car
+  const handleCarSelect = (carId: string) => {
+    const selectedCar = cars.find(c => c.id === carId)
+    setFormData(prev => ({
+      ...prev,
+      car_id: carId,
+      // Auto-populate company and customer from the selected car
+      company_id: selectedCar?.company_id || prev.company_id,
+      customer_id: selectedCar?.customer_id || prev.customer_id,
+    }))
   }
 
   const addLineItem = () => {
@@ -421,55 +578,50 @@ export function InvoiceFormPage() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm text-slate-400 mb-2">Company (Optional)</label>
-              <select
-                value={formData.company_id}
-                onChange={(e) => setFormData({ ...formData, company_id: e.target.value, car_id: '' })}
-                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select Company</option>
-                {companies.map(company => (
-                  <option key={company.id} value={company.id}>{company.name}</option>
-                ))}
-              </select>
-            </div>
+            {/* Searchable Company Select */}
+            <SearchableSelect
+              label="Company"
+              placeholder="Select Company"
+              value={formData.company_id}
+              options={companies}
+              getOptionValue={(c) => c.id}
+              getOptionLabel={(c) => c.name}
+              getOptionSubLabel={(c) => c.primary_phone || c.primary_email || undefined}
+              onChange={(value) => setFormData({ ...formData, company_id: value })}
+              icon={<Building2 className="w-4 h-4 text-purple-400" />}
+            />
 
-            <div>
-              <label className="block text-sm text-slate-400 mb-2">Customer (Optional)</label>
-              <select
-                value={formData.customer_id}
-                onChange={(e) => setFormData({ ...formData, customer_id: e.target.value, car_id: '' })}
-                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select Customer</option>
-                {customers.map(customer => (
-                  <option key={customer.id} value={customer.id}>{customer.full_name}</option>
-                ))}
-              </select>
-            </div>
+            {/* Searchable Customer Select */}
+            <SearchableSelect
+              label="Customer"
+              placeholder="Select Customer"
+              value={formData.customer_id}
+              options={customers}
+              getOptionValue={(c) => c.id}
+              getOptionLabel={(c) => c.full_name}
+              getOptionSubLabel={(c) => c.phone || c.email || undefined}
+              onChange={(value) => setFormData({ ...formData, customer_id: value })}
+              icon={<User className="w-4 h-4 text-blue-400" />}
+            />
 
-            <div>
-              <label className="block text-sm text-slate-400 mb-2">Vehicle *</label>
-              <select
-                value={formData.car_id}
-                onChange={(e) => setFormData({ ...formData, car_id: e.target.value })}
-                required
-                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select Vehicle</option>
-                {cars.map(car => (
-                  <option key={car.id} value={car.id}>
-                    {car.rego_plate} - {car.make} {car.model}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Searchable Vehicle Select */}
+            <SearchableSelect
+              label="Vehicle"
+              placeholder="Select Vehicle"
+              value={formData.car_id}
+              options={cars}
+              getOptionValue={(c) => c.id}
+              getOptionLabel={(c) => c.rego_plate}
+              getOptionSubLabel={(c) => `${c.make || ''} ${c.model || ''} ${c.year ? `(${c.year})` : ''}`.trim() || undefined}
+              onChange={handleCarSelect}
+              required
+              icon={<CarIcon className="w-4 h-4 text-green-400" />}
+            />
           </div>
 
           {/* Selected Customer Info */}
-          {(selectedCompany || selectedCustomer) && (
-            <div className="mt-4 p-4 bg-slate-700/50 rounded-lg grid grid-cols-1 md:grid-cols-2 gap-4">
+          {(selectedCompany || selectedCustomer || selectedCar) && (
+            <div className="mt-4 p-4 bg-slate-700/50 rounded-lg grid grid-cols-1 md:grid-cols-3 gap-4">
               {selectedCompany && (
                 <div className="flex items-start gap-3">
                   <Building2 className="w-5 h-5 text-purple-400 mt-0.5" />
@@ -777,4 +929,3 @@ export function InvoiceFormPage() {
     </div>
   )
 }
-
