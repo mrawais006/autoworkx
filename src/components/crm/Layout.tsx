@@ -6,6 +6,7 @@ import {
   Building2, 
   Users, 
   Receipt, 
+  FileText,
   Settings, 
   LogOut,
   Menu,
@@ -18,6 +19,7 @@ const navigation = [
   { name: 'Cars', href: '/crm/cars', icon: Car },
   { name: 'Companies', href: '/crm/companies', icon: Building2 },
   { name: 'Customers', href: '/crm/customers', icon: Users },
+  { name: 'Invoices', href: '/crm/invoices', icon: FileText },
   { name: 'Payments', href: '/crm/payments', icon: Receipt },
   { name: 'Settings', href: '/crm/settings', icon: Settings },
 ]
@@ -129,4 +131,5 @@ export function CRMLayout() {
     </div>
   )
 }
+
 

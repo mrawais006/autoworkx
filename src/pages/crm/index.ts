@@ -8,4 +8,6 @@ export { CompaniesPage } from './Companies'
 export { CustomersPage } from './Customers'
 export { PaymentsPage } from './Payments'
 export { SettingsPage } from './Settings'
-
+export { InvoicesPage } from './Invoices'
+export { InvoiceDetailPage } from './InvoiceDetail'
+export { InvoiceFormPage } from './InvoiceForm'

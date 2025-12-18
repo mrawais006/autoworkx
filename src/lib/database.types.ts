@@ -526,3 +526,4 @@ export type ServiceVisitWithRelations = ServiceVisit & {
   invoices?: Invoice[]
 }
 
+

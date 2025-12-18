@@ -17,6 +17,9 @@ import {
   CustomersPage,
   PaymentsPage,
   SettingsPage,
+  InvoicesPage,
+  InvoiceDetailPage,
+  InvoiceFormPage,
 } from './pages/crm'
 import './index.css'
 
@@ -66,6 +69,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             <Route path="cars/:id" element={<CarDetailPage />} />
             <Route path="cars/:id/edit" element={<CarFormPage />} />
             <Route path="service/new" element={<ServiceFormPage />} />
+            <Route path="invoices" element={<InvoicesPage />} />
+            <Route path="invoices/new" element={<InvoiceFormPage />} />
+            <Route path="invoices/:id" element={<InvoiceDetailPage />} />
+            <Route path="invoices/:id/edit" element={<InvoiceFormPage />} />
             <Route path="companies" element={<CompaniesPage />} />
             <Route path="customers" element={<CustomersPage />} />
             <Route path="payments" element={<PaymentsPage />} />
